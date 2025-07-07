@@ -90,6 +90,27 @@ export default function GestorEventos() {
       alert("Por favor corrija los errores antes de registrar");
       return;
     }
+
+    const nuevoEvento = {
+      ...evento,
+      id: Date.now()
+    };
+
+    const nuevosEventos = [...eventos, nuevoEvento];
+    setEventos(nuevosEventos);
+    localStorage.setItem("eventos", JSON.stringify(nuevosEventos));
+    
+    setEvento(initialStateEvento);
+    alert("¡Evento registrado exitosamente!");
+  };
+
+  const handleEliminar = (id) => {
+    if (window.confirm("¿Está seguro que desea eliminar este evento?")) {
+      const eventosActualizados = eventos.filter(e => e.id !== id);
+      setEventos(eventosActualizados);
+      localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+      alert("¡Evento eliminado exitosamente!");
+    }
   };
 
   return (
@@ -177,7 +198,29 @@ export default function GestorEventos() {
         {eventos.length === 0 ? (
           <p>No hay eventos registrados aún.</p>
         ) : (
-          <div></div>
+          <div>
+            {eventos.map((e) => (
+              <div key={e.id}>
+                <h3>{e.nombre}</h3>
+                <p>Tipo: {e.tipo}</p>
+                <p>Presupuesto: ${e.presupuesto}</p>
+                <p>Fecha: {e.fecha}</p>
+                <p>Descripción: {e.descripcion}</p>
+                <div>
+                  <button
+                    onClick={() => setModoEdicion(true)}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleEliminar(e.id)}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
