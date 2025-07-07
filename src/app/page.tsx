@@ -36,9 +36,61 @@ export default function GestorEventos() {
       ...evento,
       [name]: name === "presupuesto" ? Number(value) : value
     });
+
+    if (name === "nombre") {
+      if (value.length < 3) {
+        setErrorNombre("El nombre debe tener al menos 3 caracteres");
+      } else {
+        setErrorNombre("");
+      }
+    }
+
+    if (name === "presupuesto") {
+      if (Number(value) <= 0) {
+        setErrorPresupuesto("El presupuesto debe ser mayor a 0");
+      } else {
+        setErrorPresupuesto("");
+      }
+    }
+
+    if (name === "tipo") {
+      if (value === "") {
+        setErrorTipo("Debe seleccionar un tipo de evento");
+      } else {
+        setErrorTipo("");
+      }
+    }
+
+    if (name === "descripcion") {
+      if (value.length < 10) {
+        setErrorDescripcion("La descripción debe tener al menos 10 caracteres");
+      } else {
+        setErrorDescripcion("");
+      }
+    }
+
+    if (name === "fecha") {
+      const fechaSeleccionada = new Date(value);
+      const fechaHoy = new Date();
+      if (fechaSeleccionada < fechaHoy) {
+        setErrorFecha("La fecha no puede ser anterior a hoy");
+      } else {
+        setErrorFecha("");
+      }
+    }
   };
 
-  const handleRegistrar = () => {};
+  const handleRegistrar = () => {
+    if (!evento.nombre || !evento.presupuesto || !evento.tipo || !evento.descripcion || !evento.fecha) {
+      alert("Por favor complete todos los campos");
+      return;
+    }
+
+    if (errorNombre || errorPresupuesto || errorTipo || errorDescripcion || errorFecha) {
+      alert("Por favor corrija los errores antes de registrar");
+      return;
+    }
+  };
 
   return (
     <div>
@@ -56,7 +108,7 @@ export default function GestorEventos() {
               value={evento.nombre}
               onChange={(e) => handleEvento(e.target.name, e.target.value)}
             /><br/>
-            <span>{errorNombre}</span>
+            <span style={{color: 'red'}}>{errorNombre}</span>
           </div>
 
           <div>
@@ -68,7 +120,7 @@ export default function GestorEventos() {
               value={evento.presupuesto || ''}
               onChange={(e) => handleEvento(e.target.name, e.target.value)}
             /><br/>
-            <span>{errorPresupuesto}</span>
+            <span style={{color: 'red'}}>{errorPresupuesto}</span>
           </div>
 
           <div>
@@ -85,19 +137,19 @@ export default function GestorEventos() {
               <option value="social">Social</option>
               <option value="benefico">Benéfico</option>
             </select><br/>
-            <span>{errorTipo}</span>
+            <span style={{color: 'red'}}>{errorTipo}</span>
           </div>
 
           <div>
             <label>Descripción:</label><br/>
             <textarea
               name="descripcion"
-              placeholder="Describe el evento"
+              placeholder="Describe el evento."
               value={evento.descripcion}
               onChange={(e) => handleEvento(e.target.name, e.target.value)}
               rows={4}
             /><br/>
-            <span>{errorDescripcion}</span>
+            <span style={{color: 'red'}}>{errorDescripcion}</span>
           </div>
 
           <div>
@@ -108,7 +160,7 @@ export default function GestorEventos() {
               value={evento.fecha}
               onChange={(e) => handleEvento(e.target.name, e.target.value)}
             /><br/>
-            <span>{errorFecha}</span>
+            <span style={{color: 'red'}}>{errorFecha}</span>
           </div>
 
           <button
