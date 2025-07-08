@@ -113,6 +113,19 @@ export default function GestorEventos() {
     }
   };
 
+  const handleEditarEvento = (eventoAEditar) => {
+    setEventoEditar(eventoAEditar);
+    setModoEdicion(true);
+  };
+
+  const handleActualizar = () => {};
+  const handleEventoEditar = (name, value) => {
+    setEventoEditar({
+      ...eventoEditar,
+      [name]: name === "presupuesto" ? Number(value) : value
+    });
+  };
+
   return (
     <div>
       <h1>Gestor de Eventos Comunitarios</h1>
@@ -193,6 +206,85 @@ export default function GestorEventos() {
         </div>
       </div>
 
+      {modoEdicion && (
+        <div>
+          <h2>Editar Evento</h2>
+          <div>
+            <div>
+              <label>Nombre del Evento:</label><br/>
+              <input
+                name="nombre"
+                type="text"
+                value={eventoEditar.nombre}
+                placeholder="Ej: Paseo de curso"
+                onChange={(e) => handleEventoEditar(e.target.name, e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label>Presupuesto:</label><br/>
+              <input
+                name="presupuesto"
+                type="number"
+                value={eventoEditar.presupuesto || ''}
+                placeholder="Ej: 25000"
+                onChange={(e) => handleEventoEditar(e.target.name, e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label>Tipo de Evento:</label><br/>
+              <select
+                name="tipo"
+                value={eventoEditar.tipo}
+                onChange={(e) => handleEventoEditar(e.target.name, e.target.value)}
+              >
+                <option value="">Seleccione un tipo</option>
+                <option value="cultural">Cultural</option>
+                <option value="deportivo">Deportivo</option>
+                <option value="educativo">Educativo</option>
+                <option value="social">Social</option>
+                <option value="benefico">Benéfico</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Descripción:</label><br/>
+              <textarea
+                name="descripcion"
+                value={eventoEditar.descripcion}
+                placeholder="Describe el evento."
+                onChange={(e) => handleEventoEditar(e.target.name, e.target.value)}
+                rows={4}
+              />
+            </div>
+
+            <div>
+              <label>Fecha del Evento:</label><br/>
+              <input
+                name="fecha"
+                type="date"
+                value={eventoEditar.fecha}
+                onChange={(e) => handleEventoEditar(e.target.name, e.target.value)}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleActualizar}
+            >
+              Actualizar Evento
+            </button>
+            <button
+              type="button"
+              onClick={() => setModoEdicion(false)}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
       <div>
         <h2>Eventos Registrados ({eventos.length})</h2>
         {eventos.length === 0 ? (
@@ -208,7 +300,7 @@ export default function GestorEventos() {
                 <p>Descripción: {e.descripcion}</p>
                 <div>
                   <button
-                    onClick={() => setModoEdicion(true)}
+                    onClick={() => handleEditarEvento(e)}
                   >
                     Editar
                   </button>
