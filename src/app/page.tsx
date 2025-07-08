@@ -118,7 +118,23 @@ export default function GestorEventos() {
     setModoEdicion(true);
   };
 
-  const handleActualizar = () => {};
+  const handleActualizar = () => {
+    if (!eventoEditar.nombre || !eventoEditar.presupuesto || !eventoEditar.tipo || !eventoEditar.descripcion || !eventoEditar.fecha) {
+      alert("Por favor complete todos los campos");
+      return;
+    }
+
+    const eventosActualizados = eventos.map(e => 
+      e.id === eventoEditar.id ? eventoEditar : e
+    );
+    
+    setEventos(eventosActualizados);
+    localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+    setModoEdicion(false);
+    setEventoEditar(initialStateEvento);
+    alert("¡Evento actualizado exitosamente!");
+  };
+
   const handleEventoEditar = (name, value) => {
     setEventoEditar({
       ...eventoEditar,
