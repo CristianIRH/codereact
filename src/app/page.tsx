@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { db } from './firebase/promesa';
 
 const initialStateEvento = {
   id: 0,
