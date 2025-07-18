@@ -26,7 +26,7 @@ const initialStateEvento = {
 
 export default function GestorEventos() {
   const [evento, setEvento] = useState(initialStateEvento);
-  const [eventos, setEventos] = useState([]);
+  const [eventos, setEventos] = useState<Evento[]>([]);
   const [eventoEditar, setEventoEditar] = useState(initialStateEvento);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [cargando, setCargando] = useState(false);
@@ -65,9 +65,9 @@ export default function GestorEventos() {
     }
   };
 
-  useEffect(() => {
-    cargarEventos();
-  }, []);
+useEffect(() => {
+  cargarEventos();
+}, []);
 
   const handleEvento = (name: keyof Evento, value: string | number) => {
     setEvento({
@@ -76,7 +76,7 @@ export default function GestorEventos() {
     });
 
     if (name === "nombre") {
-      if (value.length < 3) {
+      if (typeof value === "string" && value.length < 3) {
         setErrorNombre("El nombre debe tener al menos 3 caracteres");
       } else {
         setErrorNombre("");
@@ -116,7 +116,8 @@ export default function GestorEventos() {
     } else {
       setErrorFecha("");
     }
-  };
+  }};
+
 
   const handleRegistrar = async () => {
     if (!evento.nombre || !evento.presupuesto || !evento.tipo || !evento.descripcion || !evento.fecha) {
@@ -125,7 +126,7 @@ export default function GestorEventos() {
     }
 
     if (errorNombre || errorPresupuesto || errorTipo || errorDescripcion || errorFecha) {
-      alert("Por favor corrija los errores antes de registrar");
+      alert("Por favor corrija los errores antes de actualizar");
       return;
     }
 
@@ -150,25 +151,9 @@ export default function GestorEventos() {
   };
 
   const handleEditarEvento = (eventoAEditar: Evento) => {
-    setEventoEditar(eventoAEditar);
+    setEventoEditar({ ...eventoAEditar });
     setModoEdicion(true);
-  };
-
-  const handleActualizar = () => {
-    if (!eventoEditar.nombre || !eventoEditar.presupuesto || !eventoEditar.tipo || !eventoEditar.descripcion || !eventoEditar.fecha) {
-      alert("Por favor complete todos los campos");
-      return;
-    }
-
-    const eventosActualizados = eventos.map(e => 
-      e.id === eventoEditar.id ? eventoEditar : e
-    );
-    
-    setEventos(eventosActualizados);
-    localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
-    setModoEdicion(false);
-    setEventoEditar(initialStateEvento);
-    alert("¡Evento actualizado exitosamente!");
+    setEvento(initialStateEvento);
   };
 
   const handleEventoEditar = (name: keyof Evento, value: string | number) => {
@@ -177,6 +162,50 @@ export default function GestorEventos() {
       [name]: name === "presupuesto" ? Number(value) : value
     });
   };
+
+  const handleEliminar = async (id: string) => {
+  if (window.confirm("¿Está seguro que desea eliminar este evento?")) {
+    try {
+      setCargando(true);
+      await deleteDoc(doc(db, "eventos", id));
+      await cargarEventos();
+      alert("¡Evento eliminado exitosamente!");
+    } catch (error) {
+      console.error("Error al eliminar evento:", error);
+      alert("Error al eliminar evento. Por favor, intenta de nuevo.");
+    } finally {
+      setCargando(false);
+    }
+  }
+  };
+
+const handleActualizar = async () => {
+  if (!eventoEditar.nombre || !eventoEditar.presupuesto || !eventoEditar.tipo || !eventoEditar.descripcion || !eventoEditar.fecha) {
+    alert("Por favor complete todos los campos");
+    return;
+  }
+  try {
+    setCargando(true);
+    const eventoRef = doc(db, "eventos", eventoEditar.id);
+    await updateDoc(eventoRef, {
+      nombre: eventoEditar.nombre,
+      presupuesto: eventoEditar.presupuesto,
+      tipo: eventoEditar.tipo,
+      descripcion: eventoEditar.descripcion,
+      fecha: eventoEditar.fecha
+    });
+    setModoEdicion(false);
+    setEventoEditar(initialStateEvento);
+    setEvento(initialStateEvento);
+    await cargarEventos();
+    alert("¡Evento actualizado exitosamente!");
+  } catch (error) {
+    console.error("Error al actualizar evento:", error);
+    alert("Error al actualizar evento. Por favor, intenta de nuevo.");
+  } finally {
+    setCargando(false);
+  }
+};
 
   return (
     <div>
@@ -265,7 +294,7 @@ export default function GestorEventos() {
               </button>
               <button
                 type="button"
-                onClick={() => { setModoEdicion(false); setEventoEditar(initialStateEvento); }}
+                onClick={() => { setModoEdicion(false); setEventoEditar(initialStateEvento); setEvento(initialStateEvento); }}
                 disabled={cargando}
                 style={{marginLeft: '10px'}}
               >
@@ -284,84 +313,7 @@ export default function GestorEventos() {
         </div>
       </div>
 
-      {modoEdicion && (
-        <div>
-          <h2>Editar Evento</h2>
-          <div>
-            <div>
-              <label>Nombre del Evento:</label><br/>
-              <input
-                name="nombre"
-                type="text"
-                placeholder="Ej: Paseo de curso"
-                value={modoEdicion ? eventoEditar.nombre : evento.nombre}
-                onChange={(e) => modoEdicion ? handleEventoEditar(e.target.name as keyof Evento, e.target.value) : handleEvento(e.target.name as keyof Evento, e.target.value)}
-              />
-            </div>
 
-            <div>
-              <label>Presupuesto:</label><br/>
-              <input
-                name="presupuesto"
-                type="number"
-                placeholder="Ej: 25000"
-                value={modoEdicion ? (eventoEditar.presupuesto || '') : (evento.presupuesto || '')}
-                onChange={(e) => modoEdicion ? handleEventoEditar(e.target.name as keyof Evento, e.target.value) : handleEvento(e.target.name as keyof Evento, e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label>Tipo de Evento:</label><br/>
-              <select
-                name="tipo"
-                value={modoEdicion ? eventoEditar.tipo : evento.tipo}
-                onChange={(e) => modoEdicion ? handleEventoEditar(e.target.name as keyof Evento, e.target.value) : handleEvento(e.target.name as keyof Evento, e.target.value)}
-              >
-                <option value="">Seleccione un tipo</option>
-                <option value="cultural">Cultural</option>
-                <option value="deportivo">Deportivo</option>
-                <option value="educativo">Educativo</option>
-                <option value="social">Social</option>
-                <option value="benefico">Benéfico</option>
-              </select>
-            </div>
-
-            <div>
-              <label>Descripción:</label><br/>
-              <textarea
-                name="descripcion"
-                placeholder="Describe el evento."
-                value={modoEdicion ? eventoEditar.descripcion : evento.descripcion}
-                onChange={(e) => modoEdicion ? handleEventoEditar(e.target.name as keyof Evento, e.target.value) : handleEvento(e.target.name as keyof Evento, e.target.value)}
-                rows={4}
-              />
-            </div>
-
-            <div>
-              <label>Fecha del Evento:</label><br/>
-              <input
-                name="fecha"
-                type="date"
-                value={modoEdicion ? eventoEditar.fecha : evento.fecha}
-                onChange={(e) => modoEdicion ? handleEventoEditar(e.target.name as keyof Evento, e.target.value) : handleEvento(e.target.name as keyof Evento, e.target.value)}
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleActualizar}
-            >
-              Actualizar Evento
-            </button>
-            <button
-              type="button"
-              onClick={() => setModoEdicion(false)}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
 
       <div>
         <h2>Eventos Registrados ({eventos.length})</h2>
@@ -370,24 +322,16 @@ export default function GestorEventos() {
         ) : (
           <div>
             {eventos.map((e) => (
-              <div key={e.id}>
-                <h3>{e.nombre}</h3>
-                <p><strong>Tipo:</strong> {e.tipo}</p>
-                <p><strong>Presupuesto:</strong> ${e.presupuesto?.toLocaleString()}</p>
-                <p><strong>Fecha:</strong> {e.fecha}</p>
-                <p><strong>Descripción:</strong> {e.descripcion}</p>
+              <div key={e.id} style={{border: '1px solid #ccc', padding: '10px', margin: '10px 0'}}>
+                <h3>{e.nombre || 'Sin nombre'}</h3>
+                <p><strong>Tipo:</strong> {e.tipo || 'Sin tipo'}</p>
+                <p><strong>Presupuesto:</strong> ${typeof e.presupuesto === 'number' ? e.presupuesto.toLocaleString() : '0'}</p>
+                <p><strong>Fecha:</strong> {e.fecha || 'Sin fecha'}</p>
+                <p><strong>Descripción:</strong> {e.descripcion || 'Sin descripción'}</p>
                 <p><small>Creado: {e.fechaCreacion ? new Date(e.fechaCreacion).toLocaleString() : 'Sin fecha'}</small></p>
                 <div>
-                  <button
-                    onClick={() => handleEditarEvento(e)}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleEliminar(e.id)}
-                  >
-                    Eliminar
-                  </button>
+                  <button onClick={() => handleEditarEvento(e)} disabled={cargando} style={{marginRight: '10px'}}>Editar</button>
+                  <button onClick={() => handleEliminar(e.id)} disabled={cargando} style={{color: 'red'}}>Eliminar</button>
                 </div>
               </div>
             ))}
@@ -396,4 +340,4 @@ export default function GestorEventos() {
       </div>
     </div>
   );
-}}
+};

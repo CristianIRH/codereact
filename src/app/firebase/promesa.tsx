@@ -9,7 +9,7 @@ export const registroEvento = async (evento: {
   fecha: string;
 }) => {
   try {
-    const docRef = await addDoc(collection(db, "Eventos"), {
+    const docRef = await addDoc(collection(db, "eventos"), {
       nombre: evento.nombre,
       presupuesto: evento.presupuesto,
       tipo: evento.tipo,
