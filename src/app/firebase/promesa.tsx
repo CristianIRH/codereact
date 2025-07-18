@@ -1,12 +1,26 @@
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "./Conexion";
 
-export const registroPersona = async()=> {
-
-// Add a new document with a generated id.
-const docRef = await addDoc(collection(db, "cities"), {
-  name: "Tokyo",
-  country: "Japan"
-});
-console.log("Document written with ID: ", docRef.id);
-}
+export const registroEvento = async (evento: {
+  nombre: string;
+  presupuesto: number;
+  tipo: string;
+  descripcion: string;
+  fecha: string;
+}) => {
+  try {
+    const docRef = await addDoc(collection(db, "Eventos"), {
+      nombre: evento.nombre,
+      presupuesto: evento.presupuesto,
+      tipo: evento.tipo,
+      descripcion: evento.descripcion,
+      fecha: evento.fecha,
+      timestamp: serverTimestamp() 
+    });
+    console.log("Document written with ID: ", docRef.id);
+    return docRef;
+  } catch (error) {
+    console.error("Error adding document: ", error);
+    throw error;
+  }
+};
