@@ -100,7 +100,7 @@ export default function GestorEventos() {
     }
 
     if (name === "descripcion") {
-      if (value.length < 10) {
+      if (typeof value === "string" && value.length < 10) {
         setErrorDescripcion("La descripción debe tener al menos 10 caracteres");
       } else {
         setErrorDescripcion("");
@@ -149,7 +149,7 @@ export default function GestorEventos() {
     }
   };
 
-  const handleEditarEvento = (eventoAEditar) => {
+  const handleEditarEvento = (eventoAEditar: Evento) => {
     setEventoEditar(eventoAEditar);
     setModoEdicion(true);
   };
@@ -171,7 +171,7 @@ export default function GestorEventos() {
     alert("¡Evento actualizado exitosamente!");
   };
 
-  const handleEventoEditar = (name, value) => {
+  const handleEventoEditar = (name: keyof Evento, value: string | number) => {
     setEventoEditar({
       ...eventoEditar,
       [name]: name === "presupuesto" ? Number(value) : value
@@ -191,8 +191,9 @@ export default function GestorEventos() {
               name="nombre"
               type="text"
               placeholder="Ej: Paseo de curso"
-              value={evento.nombre}
-              onChange={(e) => handleEvento(e.target.name, e.target.value)}
+              value={modoEdicion ? eventoEditar.nombre : evento.nombre}
+              onChange={(e) => modoEdicion ? handleEventoEditar(e.target.name as keyof Evento, e.target.value) : handleEvento(e.target.name as keyof Evento, e.target.value)}
+              disabled={cargando}
             /><br/>
             <span style={{color: 'red'}}>{errorNombre}</span>
           </div>
@@ -203,8 +204,9 @@ export default function GestorEventos() {
               name="presupuesto"
               type="number"
               placeholder="Ej: 25000"
-              value={evento.presupuesto || ''}
-              onChange={(e) => handleEvento(e.target.name, e.target.value)}
+              value={modoEdicion ? (eventoEditar.presupuesto || '') : (evento.presupuesto || '')}
+              onChange={(e) => modoEdicion ? handleEventoEditar(e.target.name as keyof Evento, e.target.value) : handleEvento(e.target.name as keyof Evento, e.target.value)}
+              disabled={cargando}
             /><br/>
             <span style={{color: 'red'}}>{errorPresupuesto}</span>
           </div>
@@ -213,8 +215,9 @@ export default function GestorEventos() {
             <label>Tipo de Evento:</label><br/>
             <select
               name="tipo"
-              value={evento.tipo}
-              onChange={(e) => handleEvento(e.target.name, e.target.value)}
+              value={modoEdicion ? eventoEditar.tipo : evento.tipo}
+              onChange={(e) => modoEdicion ? handleEventoEditar(e.target.name as keyof Evento, e.target.value) : handleEvento(e.target.name as keyof Evento, e.target.value)}
+              disabled={cargando}
             >
               <option value="">Seleccione un tipo</option>
               <option value="cultural">Cultural</option>
@@ -231,9 +234,10 @@ export default function GestorEventos() {
             <textarea
               name="descripcion"
               placeholder="Describe el evento."
-              value={evento.descripcion}
-              onChange={(e) => handleEvento(e.target.name, e.target.value)}
+              value={modoEdicion ? eventoEditar.descripcion : evento.descripcion}
+              onChange={(e) => modoEdicion ? handleEventoEditar(e.target.name as keyof Evento, e.target.value) : handleEvento(e.target.name as keyof Evento, e.target.value)}
               rows={4}
+              disabled={cargando}
             /><br/>
             <span style={{color: 'red'}}>{errorDescripcion}</span>
           </div>
@@ -243,8 +247,9 @@ export default function GestorEventos() {
             <input
               name="fecha"
               type="date"
-              value={evento.fecha}
-              onChange={(e) => handleEvento(e.target.name, e.target.value)}
+              value={modoEdicion ? eventoEditar.fecha : evento.fecha}
+              onChange={(e) => modoEdicion ? handleEventoEditar(e.target.name as keyof Evento, e.target.value) : handleEvento(e.target.name as keyof Evento, e.target.value)}
+              disabled={cargando}
             /><br/>
             <span style={{color: 'red'}}>{errorFecha}</span>
           </div>
@@ -367,10 +372,11 @@ export default function GestorEventos() {
             {eventos.map((e) => (
               <div key={e.id}>
                 <h3>{e.nombre}</h3>
-                <p>Tipo: {e.tipo}</p>
-                <p>Presupuesto: ${e.presupuesto}</p>
-                <p>Fecha: {e.fecha}</p>
-                <p>Descripción: {e.descripcion}</p>
+                <p><strong>Tipo:</strong> {e.tipo}</p>
+                <p><strong>Presupuesto:</strong> ${e.presupuesto?.toLocaleString()}</p>
+                <p><strong>Fecha:</strong> {e.fecha}</p>
+                <p><strong>Descripción:</strong> {e.descripcion}</p>
+                <p><small>Creado: {e.fechaCreacion ? new Date(e.fechaCreacion).toLocaleString() : 'Sin fecha'}</small></p>
                 <div>
                   <button
                     onClick={() => handleEditarEvento(e)}
@@ -390,4 +396,4 @@ export default function GestorEventos() {
       </div>
     </div>
   );
-}
+}}
